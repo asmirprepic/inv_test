@@ -1,0 +1,4 @@
+policy:
+  max_single_fund_pct_nav: 0.12
+  min_liquidity_coverage_months: 12
+  target_private_markets_pct: 0.35

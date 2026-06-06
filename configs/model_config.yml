@@ -1,0 +1,5 @@
+llm:
+  provider: mock
+  model: deterministic-demo
+  temperature: 0.0
+  max_tokens: 1200

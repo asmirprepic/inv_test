@@ -1,0 +1,7 @@
+project:
+  name: private-markets-intelligence-platform
+  environment: local
+pipeline:
+  fund_type: nordic_infrastructure
+  currency: EUR
+  forecast_months: 60

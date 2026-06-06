@@ -1,0 +1,13 @@
+taxonomy:
+  underwriting:
+    - track_record
+    - team_stability
+    - valuation_discipline
+  portfolio:
+    - concentration
+    - geography
+    - sector_focus
+  execution:
+    - deployment_pacing
+    - financing_risk
+    - exit_environment
