@@ -46,6 +46,14 @@ class RiskFinding:
 
 
 @dataclass(slots=True)
+class DueDiligenceReport:
+    facts: ExtractedFundFacts
+    risks: list[RiskFinding]
+    overall_risk_rating: str
+    validation_notes: list[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
 class CashflowPoint:
     as_of: date
     contribution_mn: float
@@ -76,3 +84,23 @@ class PortfolioSnapshot:
     total_nav_mn: float
     liquid_reserves_mn: float
     holdings: list[PortfolioHolding] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class PortfolioSummary:
+    total_nav_mn: float
+    total_unfunded_mn: float
+    liquid_reserves_mn: float
+    infrastructure_nav_mn: float
+    infrastructure_pct_nav: float
+
+
+@dataclass(slots=True)
+class LiquidityStressResult:
+    scenario_name: str
+    starting_liquidity_mn: float
+    projected_calls_mn: float
+    projected_distributions_mn: float
+    ending_liquidity_mn: float
+    liquidity_coverage_ratio: float
+    breach: bool

@@ -1,0 +1,10 @@
+{
+  "document_id": "northlake-v-memo",
+  "fund_name": "Northlake Infrastructure Partners V",
+  "strategy": "infrastructure",
+  "geography": "Nordics",
+  "currency": "EUR",
+  "commitment_size_mn": 60.0,
+  "vintage_year": 2026,
+  "source_document_path": "data/sample_documents/nordic_infrastructure_fund_v.md"
+}

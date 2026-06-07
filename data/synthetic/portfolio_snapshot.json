@@ -1,0 +1,49 @@
+{
+  "as_of": "2026-03-31",
+  "total_nav_mn": 820.0,
+  "liquid_reserves_mn": 145.0,
+  "holdings": [
+    {
+      "name": "Aurora Buyout IV",
+      "strategy": "private_equity_buyout",
+      "nav_mn": 165.0,
+      "unfunded_mn": 58.0
+    },
+    {
+      "name": "North Harbor Infra III",
+      "strategy": "infrastructure",
+      "nav_mn": 138.0,
+      "unfunded_mn": 42.0
+    },
+    {
+      "name": "Baltic Energy Transition II",
+      "strategy": "infrastructure",
+      "nav_mn": 96.0,
+      "unfunded_mn": 51.0
+    },
+    {
+      "name": "Granite Real Estate IX",
+      "strategy": "real_estate",
+      "nav_mn": 124.0,
+      "unfunded_mn": 39.0
+    },
+    {
+      "name": "Timber North Europe I",
+      "strategy": "timberland",
+      "nav_mn": 82.0,
+      "unfunded_mn": 21.0
+    },
+    {
+      "name": "Vector Growth Opportunities II",
+      "strategy": "growth_equity",
+      "nav_mn": 109.0,
+      "unfunded_mn": 47.0
+    },
+    {
+      "name": "Quant Systems Co-Invest Program",
+      "strategy": "co_invest",
+      "nav_mn": 106.0,
+      "unfunded_mn": 18.0
+    }
+  ]
+}

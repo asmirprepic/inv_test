@@ -1,0 +1,21 @@
+{
+  "base_case": {
+    "investment_period_years": 4,
+    "call_rate_curve": [0.18, 0.32, 0.28, 0.14, 0.08],
+    "distribution_start_year": 3,
+    "distribution_rate_curve": [0.00, 0.00, 0.06, 0.14, 0.20, 0.24, 0.22, 0.16, 0.08],
+    "target_tvpi": 1.55
+  },
+  "downside_case": {
+    "investment_period_years": 5,
+    "call_rate_curve": [0.14, 0.24, 0.24, 0.18, 0.12, 0.08],
+    "distribution_start_year": 4,
+    "distribution_rate_curve": [0.00, 0.00, 0.00, 0.08, 0.14, 0.20, 0.20, 0.18, 0.12, 0.08],
+    "target_tvpi": 1.30
+  },
+  "liquidity_stress": {
+    "near_term_call_multiplier": 1.15,
+    "near_term_distribution_multiplier": 0.75,
+    "stress_horizon_months": 24
+  }
+}
