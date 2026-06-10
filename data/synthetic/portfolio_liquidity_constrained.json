@@ -1,0 +1,49 @@
+{
+  "as_of": "2026-03-31",
+  "total_nav_mn": 760.0,
+  "liquid_reserves_mn": 62.0,
+  "holdings": [
+    {
+      "name": "Aurora Buyout IV",
+      "strategy": "private_equity_buyout",
+      "nav_mn": 158.0,
+      "unfunded_mn": 73.0
+    },
+    {
+      "name": "North Harbor Infra III",
+      "strategy": "infrastructure",
+      "nav_mn": 124.0,
+      "unfunded_mn": 58.0
+    },
+    {
+      "name": "Baltic Energy Transition II",
+      "strategy": "infrastructure",
+      "nav_mn": 93.0,
+      "unfunded_mn": 54.0
+    },
+    {
+      "name": "Granite Real Estate IX",
+      "strategy": "real_estate",
+      "nav_mn": 118.0,
+      "unfunded_mn": 48.0
+    },
+    {
+      "name": "Harbor Logistics Property Fund",
+      "strategy": "real_estate",
+      "nav_mn": 86.0,
+      "unfunded_mn": 42.0
+    },
+    {
+      "name": "Timber North Europe I",
+      "strategy": "timberland",
+      "nav_mn": 74.0,
+      "unfunded_mn": 25.0
+    },
+    {
+      "name": "Vector Growth Opportunities II",
+      "strategy": "growth_equity",
+      "nav_mn": 107.0,
+      "unfunded_mn": 52.0
+    }
+  ]
+}

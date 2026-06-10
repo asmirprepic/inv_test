@@ -4,14 +4,21 @@ from dataclasses import dataclass
 
 from altintel.analytics.liquidity import run_liquidity_stress
 from altintel.cashflows.forecasting import forecast_commitment_cashflows
-from altintel.core import AppConfig, DueDiligenceReport, LiquidityStressResult, PortfolioSummary
+from altintel.core import (
+    AppConfig,
+    DueDiligenceReport,
+    LiquidityStressResult,
+    PolicyEvaluation,
+    PortfolioSummary,
+)
 from altintel.data.sample_data import (
     load_cashflow_assumptions,
+    load_named_proposed_commitment,
     load_portfolio_snapshot,
-    load_proposed_commitment,
 )
 from altintel.due_diligence.service import run_due_diligence
 from altintel.portfolio.analysis import add_proposed_commitment, summarize_portfolio
+from altintel.portfolio.policy import evaluate_portfolio_policy
 
 
 @dataclass(slots=True)
@@ -25,11 +32,16 @@ class FullPipelineResult:
     downside_case_peak_nav_mn: float
     downside_case_tvpi: float
     liquidity_stress: LiquidityStressResult
+    policy_evaluation: PolicyEvaluation
 
 
-def run_full_pipeline(config: AppConfig) -> FullPipelineResult:
-    memo = load_proposed_commitment()
-    portfolio = load_portfolio_snapshot()
+def run_full_pipeline(
+    config: AppConfig,
+    portfolio_case: str = "balanced_institution",
+    commitment_case: str = "infrastructure",
+) -> FullPipelineResult:
+    memo = load_named_proposed_commitment(case_name=commitment_case)
+    portfolio = load_portfolio_snapshot(case_name=portfolio_case)
     assumptions = load_cashflow_assumptions()
 
     due_diligence = run_due_diligence(memo, config)
@@ -44,6 +56,12 @@ def run_full_pipeline(config: AppConfig) -> FullPipelineResult:
         downside_case,
         assumptions["liquidity_stress"],
     )
+    policy_evaluation = evaluate_portfolio_policy(
+        portfolio=portfolio_with_commitment,
+        proposed_commitment=memo,
+        forecast=downside_case,
+        policy=config.portfolio_policy["policy"],
+    )
 
     return FullPipelineResult(
         due_diligence=due_diligence,
@@ -55,4 +73,5 @@ def run_full_pipeline(config: AppConfig) -> FullPipelineResult:
         downside_case_peak_nav_mn=downside_case.peak_nav_mn,
         downside_case_tvpi=downside_case.tvpi,
         liquidity_stress=liquidity_stress,
+        policy_evaluation=policy_evaluation,
     )

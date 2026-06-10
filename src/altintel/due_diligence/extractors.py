@@ -46,15 +46,15 @@ def extract_fund_facts(memo: InvestmentMemoInput) -> ExtractedFundFacts:
     text = memo.source_text
     evidence = [
         EvidenceItem(
-            quote=_extract_sentence_containing(text, "target size is EUR 1,200 million"),
+            quote=_extract_sentence_containing(text, "target size is EUR"),
             section="Fund Overview",
         ),
         EvidenceItem(
-            quote=_extract_sentence_containing(text, "The management fee is 1.5%"),
+            quote=_extract_sentence_containing(text, "The management fee is"),
             section="Terms and Economics",
         ),
         EvidenceItem(
-            quote=_extract_sentence_containing(text, "Carried interest is 20%"),
+            quote=_extract_sentence_containing(text, "Carried interest is"),
             section="Terms and Economics",
         ),
     ]
@@ -74,36 +74,68 @@ def extract_fund_facts(memo: InvestmentMemoInput) -> ExtractedFundFacts:
 
 def extract_risk_findings(memo: InvestmentMemoInput) -> list[RiskFinding]:
     text = memo.source_text
-    risk_rows = [
-        (
-            "deployment_pacing",
-            "Deployment risk remains relevant",
-            "Deployment pacing may lag underwriting plan",
-            "Slower capital deployment could defer value creation and push out distributions.",
-            ["Use pacing downside case in portfolio liquidity planning."],
-        ),
-        (
-            "financing_risk",
-            "Financing risk is moderate",
-            "Refinancing conditions may pressure asset-level outcomes",
-            "Elevated base rates could weigh on refinancing flexibility and equity value realization.",
-            ["Track leverage and refinancing maturity ladders in quarterly reviews."],
-        ),
-        (
-            "sector_concentration",
-            "Sector concentration is meaningful",
-            "Renewables and digital infrastructure dominate target mix",
-            "The portfolio is exposed to common demand and policy drivers across two major themes.",
-            ["Assess overlap against existing infrastructure holdings before commitment approval."],
-        ),
-        (
-            "key_person",
-            "Key-person risk is manageable",
-            "Decision-making remains concentrated in founding partners",
-            "Team depth has improved, but investment judgment is still anchored in a small leadership group.",
-            ["Require updates on succession planning and key-person provisions."],
-        ),
-    ]
+    if memo.strategy == "timberland":
+        risk_rows = [
+            (
+                "biological_weather",
+                "Biological and weather risk is meaningful",
+                "Biological growth and weather events can affect realizations",
+                "Harvest timing and asset values are exposed to forestry-specific biological and climate conditions.",
+                ["Review climate resilience assumptions and regional asset diversification."],
+            ),
+            (
+                "exit_timing",
+                "Exit-timing risk is moderate",
+                "Timberland realizations may be delayed in softer buyer markets",
+                "Long-duration assets can defer exits, which may slow liquidity conversion during weak demand periods.",
+                ["Use longer hold assumptions in downside portfolio planning."],
+            ),
+            (
+                "geographic_concentration",
+                "Geographic concentration is manageable",
+                "Northern Europe focus increases regional concentration",
+                "Policy, weather, and export-market conditions may affect a concentrated regional strategy.",
+                ["Monitor regional overlap with existing timberland and real-asset exposures."],
+            ),
+            (
+                "operating_complexity",
+                "Operating complexity is moderate",
+                "Execution depends on forestry operations and contractor oversight",
+                "Value creation relies on local operating execution rather than financial engineering alone.",
+                ["Track certification compliance and contractor performance in monitoring packs."],
+            ),
+        ]
+    else:
+        risk_rows = [
+            (
+                "deployment_pacing",
+                "Deployment risk remains relevant",
+                "Deployment pacing may lag underwriting plan",
+                "Slower capital deployment could defer value creation and push out distributions.",
+                ["Use pacing downside case in portfolio liquidity planning."],
+            ),
+            (
+                "financing_risk",
+                "Financing risk is moderate",
+                "Refinancing conditions may pressure asset-level outcomes",
+                "Elevated base rates could weigh on refinancing flexibility and equity value realization.",
+                ["Track leverage and refinancing maturity ladders in quarterly reviews."],
+            ),
+            (
+                "sector_concentration",
+                "Sector concentration is meaningful",
+                "Renewables and digital infrastructure dominate target mix",
+                "The portfolio is exposed to common demand and policy drivers across two major themes.",
+                ["Assess overlap against existing infrastructure holdings before commitment approval."],
+            ),
+            (
+                "key_person",
+                "Key-person risk is manageable",
+                "Decision-making remains concentrated in founding partners",
+                "Team depth has improved, but investment judgment is still anchored in a small leadership group.",
+                ["Require updates on succession planning and key-person provisions."],
+            ),
+        ]
 
     findings: list[RiskFinding] = []
     for category, phrase, title, rationale, mitigants in risk_rows:
@@ -127,7 +159,7 @@ def build_mock_due_diligence_report(memo: InvestmentMemoInput) -> DueDiligenceRe
     validation_notes = [
         "Commitment amount in input file matches the document statement.",
         "Fee, carry, and term were extracted from explicit memo language.",
-        "Risk findings are deterministic and evidence-linked for demo reproducibility.",
+        "Risk findings are deterministic, asset-class aware, and evidence-linked for demo reproducibility.",
     ]
     return DueDiligenceReport(
         facts=facts,

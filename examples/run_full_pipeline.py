@@ -20,6 +20,11 @@ def main() -> None:
     print(f"Downside TVPI: {result.downside_case_tvpi}")
     print(f"Stress ending liquidity (EUR mn): {result.liquidity_stress.ending_liquidity_mn}")
     print(f"Stress breach: {result.liquidity_stress.breach}")
+    print("Policy checks:")
+    for check in result.policy_evaluation.checks:
+        print(
+            f"- {check.name}: {check.status} | metric={check.metric_value} threshold={check.threshold_value}"
+        )
 
 
 if __name__ == "__main__":

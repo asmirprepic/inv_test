@@ -1,0 +1,10 @@
+{
+  "document_id": "boreal-timberland-ii-memo",
+  "fund_name": "Boreal Timberland Opportunities II",
+  "strategy": "timberland",
+  "geography": "Nordics and Baltics",
+  "currency": "EUR",
+  "commitment_size_mn": 45.0,
+  "vintage_year": 2026,
+  "source_document_path": "data/sample_documents/nordic_timberland_fund_ii.md"
+}

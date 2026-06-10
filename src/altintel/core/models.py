@@ -104,3 +104,17 @@ class LiquidityStressResult:
     ending_liquidity_mn: float
     liquidity_coverage_ratio: float
     breach: bool
+
+
+@dataclass(slots=True)
+class PolicyCheck:
+    name: str
+    status: str
+    metric_value: float
+    threshold_value: float
+    message: str
+
+
+@dataclass(slots=True)
+class PolicyEvaluation:
+    checks: list[PolicyCheck]
