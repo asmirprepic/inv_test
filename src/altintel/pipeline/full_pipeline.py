@@ -2,15 +2,18 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from altintel.analytics.monitoring import build_data_driven_insights
 from altintel.analytics.liquidity import run_liquidity_stress
 from altintel.cashflows.forecasting import forecast_commitment_cashflows
 from altintel.core import (
     AppConfig,
+    DataDrivenInsights,
     DueDiligenceReport,
     LiquidityStressResult,
     PolicyEvaluation,
     PortfolioSummary,
 )
+from altintel.data.simulation import generate_portfolio_monitoring_data
 from altintel.data.sample_data import (
     load_cashflow_assumptions,
     load_named_proposed_commitment,
@@ -33,6 +36,7 @@ class FullPipelineResult:
     downside_case_tvpi: float
     liquidity_stress: LiquidityStressResult
     policy_evaluation: PolicyEvaluation
+    data_driven_insights: DataDrivenInsights
 
 
 def run_full_pipeline(
@@ -62,6 +66,11 @@ def run_full_pipeline(
         forecast=downside_case,
         policy=config.portfolio_policy["policy"],
     )
+    monitoring_observations = generate_portfolio_monitoring_data(portfolio_with_commitment)
+    data_driven_insights = build_data_driven_insights(
+        observations=monitoring_observations,
+        liquid_reserves_mn=portfolio_with_commitment.liquid_reserves_mn,
+    )
 
     return FullPipelineResult(
         due_diligence=due_diligence,
@@ -74,4 +83,5 @@ def run_full_pipeline(
         downside_case_tvpi=downside_case.tvpi,
         liquidity_stress=liquidity_stress,
         policy_evaluation=policy_evaluation,
+        data_driven_insights=data_driven_insights,
     )

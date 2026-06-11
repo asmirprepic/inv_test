@@ -118,3 +118,64 @@ class PolicyCheck:
 @dataclass(slots=True)
 class PolicyEvaluation:
     checks: list[PolicyCheck]
+
+
+@dataclass(slots=True)
+class HoldingObservation:
+    as_of: date
+    holding_name: str
+    strategy: str
+    nav_mn: float
+    contribution_mn: float
+    distribution_mn: float
+    revenue_growth_pct: float
+    ebitda_margin_pct: float
+    leverage_ratio: float
+    valuation_change_pct: float
+
+
+@dataclass(slots=True)
+class MonitoringAlert:
+    holding_name: str
+    as_of: date
+    severity: str
+    metric: str
+    message: str
+
+
+@dataclass(slots=True)
+class StrategySignal:
+    strategy: str
+    observation_count: int
+    avg_revenue_growth_pct: float
+    avg_distribution_yield_pct: float
+    avg_leverage_ratio: float
+    nav_volatility_pct: float
+
+
+@dataclass(slots=True)
+class DataDrivenInsights:
+    observations: list[HoldingObservation]
+    strategy_signals: list[StrategySignal]
+    alerts: list[MonitoringAlert]
+    portfolio_cash_burn_ratio: float
+
+
+@dataclass(slots=True)
+class PortfolioCaseComparison:
+    portfolio_case: str
+    commitment_case: str
+    suitability_score: float
+    policy_breach_count: int
+    policy_watch_count: int
+    monitoring_alert_count: int
+    high_severity_alert_count: int
+    ending_liquidity_mn: float
+    liquidity_breach: bool
+    cash_burn_ratio: float
+    concentration_pct_nav: float
+
+
+@dataclass(slots=True)
+class PortfolioComparisonResult:
+    comparisons: list[PortfolioCaseComparison]

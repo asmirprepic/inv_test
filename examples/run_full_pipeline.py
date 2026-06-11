@@ -25,6 +25,14 @@ def main() -> None:
         print(
             f"- {check.name}: {check.status} | metric={check.metric_value} threshold={check.threshold_value}"
         )
+    print(f"Monitoring alerts: {len(result.data_driven_insights.alerts)}")
+    print(f"Portfolio cash burn ratio: {result.data_driven_insights.portfolio_cash_burn_ratio}")
+    print("Strategy signals:")
+    for signal in result.data_driven_insights.strategy_signals:
+        print(
+            f"- {signal.strategy}: growth={signal.avg_revenue_growth_pct}% "
+            f"yield={signal.avg_distribution_yield_pct}% leverage={signal.avg_leverage_ratio}"
+        )
 
 
 if __name__ == "__main__":
