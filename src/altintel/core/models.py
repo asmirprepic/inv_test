@@ -158,6 +158,7 @@ class DataDrivenInsights:
     observations: list[HoldingObservation]
     strategy_signals: list[StrategySignal]
     alerts: list[MonitoringAlert]
+    anomaly_scores: list["HoldingAnomalyScore"]
     portfolio_cash_burn_ratio: float
 
 
@@ -179,3 +180,42 @@ class PortfolioCaseComparison:
 @dataclass(slots=True)
 class PortfolioComparisonResult:
     comparisons: list[PortfolioCaseComparison]
+
+
+@dataclass(slots=True)
+class HoldingAnomalyScore:
+    holding_name: str
+    strategy: str
+    as_of: date
+    anomaly_score: float
+    revenue_growth_deviation: float
+    leverage_deviation: float
+    valuation_deviation: float
+    distribution_deviation: float
+    label: str
+
+
+@dataclass(slots=True)
+class PortfolioCaseTimeSeriesPoint:
+    portfolio_case: str
+    as_of: date
+    holdings_count: int
+    total_nav_mn: float
+    total_contributions_mn: float
+    total_distributions_mn: float
+    net_cash_burn_mn: float
+    cash_burn_ratio: float
+    alert_count: int
+    high_severity_alert_count: int
+
+
+@dataclass(slots=True)
+class PortfolioCaseTimeSeries:
+    portfolio_case: str
+    commitment_case: str
+    points: list[PortfolioCaseTimeSeriesPoint]
+
+
+@dataclass(slots=True)
+class PortfolioCasesTimeSeriesComparison:
+    series: list[PortfolioCaseTimeSeries]

@@ -3,7 +3,13 @@ from __future__ import annotations
 from collections import defaultdict
 from statistics import mean, pstdev
 
-from altintel.core.models import DataDrivenInsights, HoldingObservation, MonitoringAlert, StrategySignal
+from altintel.core.models import (
+    DataDrivenInsights,
+    HoldingAnomalyScore,
+    HoldingObservation,
+    MonitoringAlert,
+    StrategySignal,
+)
 
 
 def _latest_observations(observations: list[HoldingObservation]) -> dict[str, HoldingObservation]:
@@ -105,6 +111,60 @@ def detect_monitoring_alerts(observations: list[HoldingObservation]) -> list[Mon
     return alerts
 
 
+def score_holding_anomalies(observations: list[HoldingObservation]) -> list[HoldingAnomalyScore]:
+    grouped = _group_by_holding(observations)
+    scores: list[HoldingAnomalyScore] = []
+
+    for holding_name, rows in grouped.items():
+        ordered = sorted(rows, key=lambda item: item.as_of)
+        if len(ordered) < 4:
+            continue
+
+        latest = ordered[-1]
+        trailing = ordered[-5:-1] if len(ordered) >= 5 else ordered[:-1]
+
+        avg_growth = mean(row.revenue_growth_pct for row in trailing)
+        avg_leverage = mean(row.leverage_ratio for row in trailing)
+        avg_valuation = mean(row.valuation_change_pct for row in trailing)
+        avg_distribution = mean(row.distribution_mn for row in trailing)
+
+        growth_deviation = max(avg_growth - latest.revenue_growth_pct, 0.0)
+        leverage_deviation = max(latest.leverage_ratio - avg_leverage, 0.0)
+        valuation_deviation = max(avg_valuation - latest.valuation_change_pct, 0.0)
+        distribution_deviation = (
+            max((avg_distribution - latest.distribution_mn) / avg_distribution, 0.0) if avg_distribution > 0 else 0.0
+        )
+
+        anomaly_score = (
+            growth_deviation * 1.8
+            + leverage_deviation * 10.0
+            + valuation_deviation * 1.4
+            + distribution_deviation * 18.0
+        )
+        if anomaly_score >= 22:
+            label = "high"
+        elif anomaly_score >= 10:
+            label = "medium"
+        else:
+            label = "low"
+
+        scores.append(
+            HoldingAnomalyScore(
+                holding_name=holding_name,
+                strategy=latest.strategy,
+                as_of=latest.as_of,
+                anomaly_score=round(anomaly_score, 4),
+                revenue_growth_deviation=round(growth_deviation, 4),
+                leverage_deviation=round(leverage_deviation, 4),
+                valuation_deviation=round(valuation_deviation, 4),
+                distribution_deviation=round(distribution_deviation, 4),
+                label=label,
+            )
+        )
+
+    return sorted(scores, key=lambda item: (-item.anomaly_score, item.holding_name))
+
+
 def build_data_driven_insights(observations: list[HoldingObservation], liquid_reserves_mn: float) -> DataDrivenInsights:
     latest = _latest_observations(observations)
     latest_rows = list(latest.values())
@@ -115,5 +175,6 @@ def build_data_driven_insights(observations: list[HoldingObservation], liquid_re
         observations=observations,
         strategy_signals=build_strategy_signals(observations),
         alerts=detect_monitoring_alerts(observations),
+        anomaly_scores=score_holding_anomalies(observations),
         portfolio_cash_burn_ratio=round(cash_burn_ratio, 4),
     )

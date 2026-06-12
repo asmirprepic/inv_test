@@ -27,6 +27,12 @@ def main() -> None:
         )
     print(f"Monitoring alerts: {len(result.data_driven_insights.alerts)}")
     print(f"Portfolio cash burn ratio: {result.data_driven_insights.portfolio_cash_burn_ratio}")
+    print("Top anomaly scores:")
+    for anomaly in result.data_driven_insights.anomaly_scores[:3]:
+        print(
+            f"- {anomaly.holding_name}: score={anomaly.anomaly_score} "
+            f"label={anomaly.label} leverage_dev={anomaly.leverage_deviation}"
+        )
     print("Strategy signals:")
     for signal in result.data_driven_insights.strategy_signals:
         print(
