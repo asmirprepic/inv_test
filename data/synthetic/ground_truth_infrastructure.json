@@ -1,0 +1,16 @@
+{
+  "fund_name": "Northlake Infrastructure Partners V",
+  "strategy": "infrastructure",
+  "geography": "Nordics",
+  "target_size_mn": 1200.0,
+  "gp_commitment_pct": 2.5,
+  "management_fee_pct": 1.5,
+  "carry_pct": 20.0,
+  "term_years": 12,
+  "risk_categories": [
+    "deployment_pacing",
+    "financing_risk",
+    "sector_concentration",
+    "key_person"
+  ]
+}

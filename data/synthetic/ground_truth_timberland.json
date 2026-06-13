@@ -1,0 +1,16 @@
+{
+  "fund_name": "Boreal Timberland Opportunities II",
+  "strategy": "timberland",
+  "geography": "Nordics and Baltics",
+  "target_size_mn": 850.0,
+  "gp_commitment_pct": 3.0,
+  "management_fee_pct": 1.35,
+  "carry_pct": 15.0,
+  "term_years": 14,
+  "risk_categories": [
+    "biological_weather",
+    "exit_timing",
+    "geographic_concentration",
+    "operating_complexity"
+  ]
+}

@@ -6,6 +6,11 @@ from altintel.llm.clients import build_due_diligence_client
 
 
 def run_due_diligence(memo: InvestmentMemoInput, config: AppConfig) -> DueDiligenceReport:
-    provider = config.model["llm"]["provider"]
-    client = build_due_diligence_client(provider)
+    llm_config = config.model["llm"]
+    client = build_due_diligence_client(
+        provider=llm_config["provider"],
+        model=llm_config["model"],
+        temperature=float(llm_config["temperature"]),
+        max_tokens=int(llm_config["max_tokens"]),
+    )
     return client.extract_due_diligence(memo)
