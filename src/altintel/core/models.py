@@ -219,3 +219,22 @@ class PortfolioCaseTimeSeries:
 @dataclass(slots=True)
 class PortfolioCasesTimeSeriesComparison:
     series: list[PortfolioCaseTimeSeries]
+
+
+@dataclass(slots=True)
+class AnnualPacingPoint:
+    year: int
+    commitment_budget_mn: float
+    proposed_commitment_mn: float
+    called_capital_mn: float
+    distributions_mn: float
+    net_cash_outflow_mn: float
+    ending_unfunded_mn: float
+    reserve_buffer_mn: float
+
+
+@dataclass(slots=True)
+class AnnualPacingAnalysis:
+    annual_commitment_budget_mn: float
+    reserve_buffer_pct: float
+    points: list[AnnualPacingPoint]

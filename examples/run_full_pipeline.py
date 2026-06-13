@@ -20,6 +20,12 @@ def main() -> None:
     print(f"Downside TVPI: {result.downside_case_tvpi}")
     print(f"Stress ending liquidity (EUR mn): {result.liquidity_stress.ending_liquidity_mn}")
     print(f"Stress breach: {result.liquidity_stress.breach}")
+    print("Annual pacing:")
+    for point in result.annual_pacing.points:
+        print(
+            f"- {point.year}: calls={point.called_capital_mn} dists={point.distributions_mn} "
+            f"net={point.net_cash_outflow_mn} ending_unfunded={point.ending_unfunded_mn}"
+        )
     print("Policy checks:")
     for check in result.policy_evaluation.checks:
         print(

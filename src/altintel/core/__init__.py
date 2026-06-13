@@ -2,6 +2,8 @@
 
 from altintel.core.config import AppConfig, load_app_config
 from altintel.core.models import (
+    AnnualPacingAnalysis,
+    AnnualPacingPoint,
     CashflowForecast,
     DataDrivenInsights,
     DueDiligenceReport,
@@ -26,6 +28,8 @@ from altintel.core.models import (
 
 __all__ = [
     "AppConfig",
+    "AnnualPacingAnalysis",
+    "AnnualPacingPoint",
     "CashflowForecast",
     "DataDrivenInsights",
     "DueDiligenceReport",

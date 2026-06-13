@@ -5,3 +5,7 @@ pipeline:
   fund_type: nordic_infrastructure
   currency: EUR
   forecast_months: 60
+  pacing:
+    annual_commitment_budget_mn: 180
+    pacing_years: 5
+    reserve_buffer_pct: 0.15
