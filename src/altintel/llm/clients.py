@@ -69,24 +69,43 @@ class OpenAICompatibleDueDiligenceClient(BaseDueDiligenceClient):
 
 
 def _report_from_llm_payload(payload: dict[str, object], memo: InvestmentMemoInput) -> DueDiligenceReport:
+    facts_payload = payload.get("facts", {})
+    if not isinstance(facts_payload, dict):
+        raise ValueError("LLM payload missing 'facts' object")
+
+    def _fact_entry(name: str) -> dict[str, object]:
+        entry = facts_payload.get(name, {})
+        if not isinstance(entry, dict):
+            raise ValueError(f"LLM fact entry must be an object: {name}")
+        return entry
+
+    def _fact_value(name: str, default: object = None) -> object:
+        return _fact_entry(name).get("value", default)
+
+    def _fact_evidence(name: str, fallback_phrase: str, fallback_section: str) -> EvidenceItem:
+        entry = _fact_entry(name)
+        quote = str(entry.get("evidence_quote", "")).strip()
+        section = str(entry.get("evidence_section", "")).strip()
+        if quote and section:
+            return EvidenceItem(quote=quote, section=section)
+        return EvidenceItem(
+            quote=_extract_sentence_containing(memo.source_text, fallback_phrase),
+            section=fallback_section,
+        )
+
     facts = ExtractedFundFacts(
-        fund_name=str(payload["fund_name"]),
-        strategy=str(payload["strategy"]),
-        geography=str(payload["geography"]),
-        target_size_mn=float(payload["target_size_mn"]),
-        gp_commitment_pct=float(payload["gp_commitment_pct"]),
-        management_fee_pct=float(payload["management_fee_pct"]),
-        carry_pct=float(payload["carry_pct"]),
-        term_years=int(payload["term_years"]),
+        fund_name=str(_fact_value("fund_name", memo.fund_name)),
+        strategy=str(_fact_value("strategy", memo.strategy)),
+        geography=str(_fact_value("geography", memo.geography)),
+        target_size_mn=float(_fact_value("target_size_mn", 0.0) or 0.0),
+        gp_commitment_pct=float(_fact_value("gp_commitment_pct", 0.0) or 0.0),
+        management_fee_pct=float(_fact_value("management_fee_pct", 0.0) or 0.0),
+        carry_pct=float(_fact_value("carry_pct", 0.0) or 0.0),
+        term_years=int(_fact_value("term_years", 0) or 0),
         evidence=[
-            EvidenceItem(
-                quote=_extract_sentence_containing(memo.source_text, "target size is EUR"),
-                section="Fund Overview",
-            ),
-            EvidenceItem(
-                quote=_extract_sentence_containing(memo.source_text, "The management fee is"),
-                section="Terms and Economics",
-            ),
+            _fact_evidence("target_size_mn", "target size is EUR", "Fund Overview"),
+            _fact_evidence("management_fee_pct", "The management fee is", "Terms and Economics"),
+            _fact_evidence("carry_pct", "Carried interest is", "Terms and Economics"),
         ],
     )
     risks: list[RiskFinding] = []
@@ -101,13 +120,20 @@ def _report_from_llm_payload(payload: dict[str, object], memo: InvestmentMemoInp
                 severity=str(risk.get("severity", _risk_severity(rationale or title))),
                 title=title or category.replace("_", " ").title(),
                 rationale=rationale,
-                evidence=[],
+                evidence=[
+                    EvidenceItem(
+                        quote=str(risk.get("evidence_quote", "")).strip(),
+                        section=str(risk.get("evidence_section", "Risk Considerations")).strip() or "Risk Considerations",
+                    )
+                ]
+                if str(risk.get("evidence_quote", "")).strip()
+                else [],
             )
         )
     return DueDiligenceReport(
         facts=facts,
         risks=risks,
-        overall_risk_rating="medium",
+        overall_risk_rating=str(payload.get("overall_risk_rating", "medium")),
         validation_notes=[str(note) for note in payload.get("validation_notes", [])],
     )
 
