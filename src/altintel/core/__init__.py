@@ -2,6 +2,7 @@
 
 from altintel.core.config import AppConfig, load_app_config
 from altintel.core.models import (
+    AIWatchlistResult,
     AnnualPacingAnalysis,
     AnnualPacingPoint,
     CashflowForecast,
@@ -24,9 +25,12 @@ from altintel.core.models import (
     PortfolioSummary,
     RiskFinding,
     StrategySignal,
+    WatchlistEntry,
+    WatchlistReason,
 )
 
 __all__ = [
+    "AIWatchlistResult",
     "AppConfig",
     "AnnualPacingAnalysis",
     "AnnualPacingPoint",
@@ -50,5 +54,7 @@ __all__ = [
     "PortfolioSummary",
     "RiskFinding",
     "StrategySignal",
+    "WatchlistEntry",
+    "WatchlistReason",
     "load_app_config",
 ]

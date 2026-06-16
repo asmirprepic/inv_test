@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from altintel.core.models import InvestmentMemoInput
+from altintel.llm.retrieval import build_retrieval_packet
 
 
 def build_due_diligence_extraction_prompt(memo: InvestmentMemoInput) -> str:
+    retrieval_packet = build_retrieval_packet(memo)
     return f"""You are an analyst extracting structured due-diligence data from a synthetic alternative-investment memo.
 
 Your job is to convert the memo into normalized JSON for downstream quantitative workflows.
@@ -11,6 +13,7 @@ Your job is to convert the memo into normalized JSON for downstream quantitative
 Requirements:
 - Return only valid JSON. Do not include markdown fences, commentary, or explanatory prose outside the JSON object.
 - Use only facts supported by the memo text.
+- Ground every output in the retrieved memo context provided below.
 - If a field is not stated explicitly and cannot be inferred with high confidence, set its value to `null` and mention the gap in `validation_notes`.
 - Normalize monetary fields to EUR millions as numbers.
 - Normalize percentage fields as numeric percentages, e.g. `2.5` for 2.5%.
@@ -95,9 +98,9 @@ Quality rules:
 - If the memo uses a broader regional phrase, preserve that phrase rather than over-normalizing.
 - Titles should read like investment-committee risk headers, not generic labels.
 - Rationales should be concise and decision-useful.
+- If retrieved context is insufficient for a field, prefer `null` over guessing.
 
 Document ID: {memo.document_id}
 Fund name in input metadata: {memo.fund_name}
-Document text:
-{memo.source_text}
+{retrieval_packet}
 """

@@ -14,6 +14,8 @@ class ExtractionEvalCase:
     commitment_case: str
     field_accuracy: float
     risk_recall: float
+    fact_evidence_coverage: float
+    risk_evidence_coverage: float
     matched_fields: int
     total_fields: int
     matched_risks: int
@@ -25,6 +27,8 @@ class ExtractionEvaluationResult:
     cases: list[ExtractionEvalCase]
     average_field_accuracy: float
     average_risk_recall: float
+    average_fact_evidence_coverage: float
+    average_risk_evidence_coverage: float
 
 
 def _ground_truth_path(case_name: str) -> Path:
@@ -48,10 +52,16 @@ def _evaluate_case(report: DueDiligenceReport, ground_truth: dict[str, object], 
     matched_risks = len(expected_risks & extracted_risks)
     total_fields = len(extracted_fields)
     total_risks = len(expected_risks)
+    fact_evidence_count = len(report.facts.evidence)
+    fact_evidence_coverage = min(fact_evidence_count / 3, 1.0)
+    risk_evidence_count = sum(1 for risk in report.risks if risk.evidence)
+    risk_evidence_coverage = round(risk_evidence_count / len(report.risks), 4) if report.risks else 0.0
     return ExtractionEvalCase(
         commitment_case=case_name,
         field_accuracy=round(matched_fields / total_fields, 4),
         risk_recall=round(matched_risks / total_risks, 4) if total_risks else 0.0,
+        fact_evidence_coverage=round(fact_evidence_coverage, 4),
+        risk_evidence_coverage=risk_evidence_coverage,
         matched_fields=matched_fields,
         total_fields=total_fields,
         matched_risks=matched_risks,
@@ -69,8 +79,16 @@ def run_extraction_evaluation(config: AppConfig) -> ExtractionEvaluationResult:
 
     average_field_accuracy = round(sum(case.field_accuracy for case in cases) / len(cases), 4) if cases else 0.0
     average_risk_recall = round(sum(case.risk_recall for case in cases) / len(cases), 4) if cases else 0.0
+    average_fact_evidence_coverage = (
+        round(sum(case.fact_evidence_coverage for case in cases) / len(cases), 4) if cases else 0.0
+    )
+    average_risk_evidence_coverage = (
+        round(sum(case.risk_evidence_coverage for case in cases) / len(cases), 4) if cases else 0.0
+    )
     return ExtractionEvaluationResult(
         cases=cases,
         average_field_accuracy=average_field_accuracy,
         average_risk_recall=average_risk_recall,
+        average_fact_evidence_coverage=average_fact_evidence_coverage,
+        average_risk_evidence_coverage=average_risk_evidence_coverage,
     )

@@ -238,3 +238,29 @@ class AnnualPacingAnalysis:
     annual_commitment_budget_mn: float
     reserve_buffer_pct: float
     points: list[AnnualPacingPoint]
+
+
+@dataclass(slots=True)
+class WatchlistReason:
+    category: str
+    signal_strength: float
+    message: str
+
+
+@dataclass(slots=True)
+class WatchlistEntry:
+    holding_name: str
+    strategy: str
+    as_of: date
+    priority_score: float
+    priority_label: str
+    recommended_action: str
+    reasons: list[WatchlistReason]
+
+
+@dataclass(slots=True)
+class AIWatchlistResult:
+    portfolio_case: str
+    generated_as_of: date
+    portfolio_cash_burn_ratio: float
+    entries: list[WatchlistEntry]

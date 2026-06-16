@@ -65,7 +65,57 @@ class OpenAICompatibleDueDiligenceClient(BaseDueDiligenceClient):
 
         content = response_payload["choices"][0]["message"]["content"]
         parsed = json.loads(content)
+        _validate_llm_payload(parsed, memo)
         return _report_from_llm_payload(parsed, memo)
+
+
+def _allowed_risk_categories(strategy: str) -> set[str]:
+    if strategy == "timberland":
+        return {"biological_weather", "exit_timing", "geographic_concentration", "operating_complexity"}
+    return {"deployment_pacing", "financing_risk", "sector_concentration", "key_person"}
+
+
+def _validate_llm_payload(payload: dict[str, object], memo: InvestmentMemoInput) -> None:
+    required_fact_fields = {
+        "fund_name",
+        "strategy",
+        "geography",
+        "target_size_mn",
+        "gp_commitment_pct",
+        "management_fee_pct",
+        "carry_pct",
+        "term_years",
+    }
+    facts_payload = payload.get("facts")
+    if not isinstance(facts_payload, dict):
+        raise ValueError("LLM payload must contain a 'facts' object")
+
+    missing = required_fact_fields - set(facts_payload)
+    if missing:
+        raise ValueError(f"LLM payload missing required fact fields: {sorted(missing)}")
+
+    for field_name in required_fact_fields:
+        entry = facts_payload[field_name]
+        if not isinstance(entry, dict):
+            raise ValueError(f"Fact entry must be an object: {field_name}")
+        if "value" not in entry or "confidence" not in entry:
+            raise ValueError(f"Fact entry missing value/confidence: {field_name}")
+
+    risks = payload.get("risks", [])
+    if not isinstance(risks, list):
+        raise ValueError("LLM payload 'risks' must be a list")
+
+    allowed_categories = _allowed_risk_categories(memo.strategy)
+    for risk in risks:
+        if not isinstance(risk, dict):
+            raise ValueError("Each risk entry must be an object")
+        category = str(risk.get("category", ""))
+        if category not in allowed_categories:
+            raise ValueError(f"Unsupported risk category for strategy {memo.strategy}: {category}")
+        if not str(risk.get("evidence_quote", "")).strip():
+            raise ValueError(f"Risk entry missing evidence_quote: {category}")
+        if str(risk.get("severity", "")) not in {"low", "medium", "high"}:
+            raise ValueError(f"Risk entry has invalid severity: {category}")
 
 
 def _report_from_llm_payload(payload: dict[str, object], memo: InvestmentMemoInput) -> DueDiligenceReport:

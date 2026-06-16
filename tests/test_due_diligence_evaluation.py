@@ -7,4 +7,6 @@ def test_run_extraction_evaluation_for_mock_provider() -> None:
 
     assert result.average_field_accuracy == 1.0
     assert result.average_risk_recall == 1.0
+    assert result.average_fact_evidence_coverage == 1.0
+    assert result.average_risk_evidence_coverage == 1.0
     assert {case.commitment_case for case in result.cases} >= {"infrastructure", "timberland"}
