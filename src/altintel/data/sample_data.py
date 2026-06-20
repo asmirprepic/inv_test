@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 from datetime import date
 
-from altintel.core.models import InvestmentMemoInput, PortfolioHolding, PortfolioSnapshot
+from altintel.core.models import InvestmentMemoInput, PortfolioHolding, PortfolioSnapshot, Prospect
 
 
 DATA_ROOT = Path("data")
@@ -13,6 +13,7 @@ SAMPLE_DOCUMENTS_DIR = DATA_ROOT / "sample_documents"
 SYNTHETIC_DIR = DATA_ROOT / "synthetic"
 DEFAULT_PORTFOLIO_CASE = "balanced_institution"
 DEFAULT_COMMITMENT_CASE = "infrastructure"
+PROSPECT_REGISTRY_PATH = SYNTHETIC_DIR / "prospect_registry.json"
 
 
 def load_text_document(path: str | Path) -> str:
@@ -103,3 +104,37 @@ def load_portfolio_snapshot(
 
 def load_cashflow_assumptions(path: str | Path = SYNTHETIC_DIR / "cashflow_assumptions.json") -> dict[str, Any]:
     return load_json(path)
+
+
+def load_prospect_registry(path: str | Path = PROSPECT_REGISTRY_PATH) -> list[Prospect]:
+    payload = load_json(path)
+    if not isinstance(payload, list):
+        raise ValueError("Prospect registry must be a list")
+    prospects: list[Prospect] = []
+    for row in payload:
+        if not isinstance(row, dict):
+            raise ValueError("Prospect registry entries must be objects")
+        prospects.append(
+            Prospect(
+                prospect_id=str(row["prospect_id"]),
+                fund_name=str(row["fund_name"]),
+                strategy=str(row["strategy"]),
+                geography=str(row["geography"]),
+                status=str(row["status"]),
+                target_size_mn=float(row["target_size_mn"]),
+                proposed_commitment_mn=float(row["proposed_commitment_mn"]),
+                gp_commitment_pct=float(row["gp_commitment_pct"]),
+                management_fee_pct=float(row["management_fee_pct"]),
+                carry_pct=float(row["carry_pct"]),
+                team_score=float(row["team_score"]),
+                track_record_score=float(row["track_record_score"]),
+                esg_score=float(row["esg_score"]),
+                portfolio_fit_score=float(row["portfolio_fit_score"]),
+                liquidity_impact_score=float(row["liquidity_impact_score"]),
+                overlap_risk_score=float(row["overlap_risk_score"]),
+                dd_score=float(row["dd_score"]),
+                tags=[str(tag) for tag in row.get("tags", [])],
+                notes=str(row.get("notes", "")),
+            )
+        )
+    return prospects

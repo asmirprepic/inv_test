@@ -264,3 +264,69 @@ class AIWatchlistResult:
     generated_as_of: date
     portfolio_cash_burn_ratio: float
     entries: list[WatchlistEntry]
+
+
+@dataclass(slots=True)
+class Prospect:
+    prospect_id: str
+    fund_name: str
+    strategy: str
+    geography: str
+    status: str
+    target_size_mn: float
+    proposed_commitment_mn: float
+    gp_commitment_pct: float
+    management_fee_pct: float
+    carry_pct: float
+    team_score: float
+    track_record_score: float
+    esg_score: float
+    portfolio_fit_score: float
+    liquidity_impact_score: float
+    overlap_risk_score: float
+    dd_score: float
+    tags: list[str] = field(default_factory=list)
+    notes: str = ""
+
+
+@dataclass(slots=True)
+class ProspectRankingReason:
+    category: str
+    score_impact: float
+    message: str
+
+
+@dataclass(slots=True)
+class RankedProspect:
+    prospect_id: str
+    fund_name: str
+    strategy: str
+    geography: str
+    status: str
+    composite_score: float
+    recommended_action: str
+    reasons: list[ProspectRankingReason]
+
+
+@dataclass(slots=True)
+class ProspectRankingResult:
+    portfolio_case: str
+    prospects: list[RankedProspect]
+
+
+@dataclass(slots=True)
+class ProspectSearchMatch:
+    prospect_id: str
+    fund_name: str
+    strategy: str
+    geography: str
+    status: str
+    match_score: float
+    matched_terms: list[str]
+    summary: str
+
+
+@dataclass(slots=True)
+class ProspectSearchResult:
+    query: str
+    matches: list[ProspectSearchMatch]
