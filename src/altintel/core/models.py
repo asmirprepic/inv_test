@@ -267,12 +267,16 @@ class AIWatchlistResult:
 
 
 @dataclass(slots=True)
-class Prospect:
-    prospect_id: str
+class InvestmentOpportunity:
+    opportunity_id: str
+    manager_name: str
     fund_name: str
     strategy: str
+    vehicle_type: str
     geography: str
-    status: str
+    pipeline_stage: str
+    vintage_year: int
+    existing_gp_relationship: bool
     target_size_mn: float
     proposed_commitment_mn: float
     gp_commitment_pct: float
@@ -285,48 +289,58 @@ class Prospect:
     liquidity_impact_score: float
     overlap_risk_score: float
     dd_score: float
+    pacing_slot_score: float
+    od_diligence_status: str
+    legal_status: str
+    target_strategy_bucket: str
+    expected_call_profile: str
+    portfolio_overlap_notes: str
     tags: list[str] = field(default_factory=list)
     notes: str = ""
 
 
 @dataclass(slots=True)
-class ProspectRankingReason:
+class OpportunityRankingReason:
     category: str
     score_impact: float
     message: str
 
 
 @dataclass(slots=True)
-class RankedProspect:
-    prospect_id: str
+class RankedOpportunity:
+    opportunity_id: str
+    manager_name: str
     fund_name: str
     strategy: str
+    vehicle_type: str
     geography: str
-    status: str
+    pipeline_stage: str
     composite_score: float
     recommended_action: str
-    reasons: list[ProspectRankingReason]
+    reasons: list[OpportunityRankingReason]
 
 
 @dataclass(slots=True)
-class ProspectRankingResult:
+class OpportunityRankingResult:
     portfolio_case: str
-    prospects: list[RankedProspect]
+    opportunities: list[RankedOpportunity]
 
 
 @dataclass(slots=True)
-class ProspectSearchMatch:
-    prospect_id: str
+class OpportunitySearchMatch:
+    opportunity_id: str
+    manager_name: str
     fund_name: str
     strategy: str
+    vehicle_type: str
     geography: str
-    status: str
+    pipeline_stage: str
     match_score: float
     matched_terms: list[str]
     summary: str
 
 
 @dataclass(slots=True)
-class ProspectSearchResult:
+class OpportunitySearchResult:
     query: str
-    matches: list[ProspectSearchMatch]
+    matches: list[OpportunitySearchMatch]

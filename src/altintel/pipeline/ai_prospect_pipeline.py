@@ -2,34 +2,38 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from altintel.analytics.prospects import rank_prospects_for_portfolio, search_prospects
-from altintel.core import PortfolioSnapshot, ProspectRankingResult, ProspectSearchResult
-from altintel.data.sample_data import load_portfolio_snapshot, load_prospect_registry
+from altintel.analytics.prospects import rank_opportunities_for_portfolio, search_opportunities
+from altintel.core import OpportunityRankingResult, OpportunitySearchResult, PortfolioSnapshot
+from altintel.data.sample_data import load_opportunity_registry, load_portfolio_snapshot
 
 
 @dataclass(slots=True)
-class AIProspectUniverse:
+class AIOpportunityUniverse:
     portfolio_case: str
     portfolio: PortfolioSnapshot
-    prospect_count: int
+    opportunity_count: int
 
 
-def build_ai_prospect_universe(portfolio_case: str = "balanced_institution") -> AIProspectUniverse:
+def build_ai_opportunity_universe(portfolio_case: str = "balanced_institution") -> AIOpportunityUniverse:
     portfolio = load_portfolio_snapshot(case_name=portfolio_case)
-    prospects = load_prospect_registry()
-    return AIProspectUniverse(
+    opportunities = load_opportunity_registry()
+    return AIOpportunityUniverse(
         portfolio_case=portfolio_case,
         portfolio=portfolio,
-        prospect_count=len(prospects),
+        opportunity_count=len(opportunities),
     )
 
 
-def run_ai_prospect_ranking_pipeline(portfolio_case: str = "balanced_institution") -> ProspectRankingResult:
+def run_ai_opportunity_ranking_pipeline(portfolio_case: str = "balanced_institution") -> OpportunityRankingResult:
     portfolio = load_portfolio_snapshot(case_name=portfolio_case)
-    prospects = load_prospect_registry()
-    return rank_prospects_for_portfolio(portfolio_case=portfolio_case, portfolio=portfolio, prospects=prospects)
+    opportunities = load_opportunity_registry()
+    return rank_opportunities_for_portfolio(
+        portfolio_case=portfolio_case,
+        portfolio=portfolio,
+        opportunities=opportunities,
+    )
 
 
-def run_ai_prospect_search_pipeline(query: str) -> ProspectSearchResult:
-    prospects = load_prospect_registry()
-    return search_prospects(query=query, prospects=prospects)
+def run_ai_opportunity_search_pipeline(query: str) -> OpportunitySearchResult:
+    opportunities = load_opportunity_registry()
+    return search_opportunities(query=query, opportunities=opportunities)

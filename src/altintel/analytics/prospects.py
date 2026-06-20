@@ -3,13 +3,13 @@ from __future__ import annotations
 import re
 
 from altintel.core.models import (
+    InvestmentOpportunity,
+    OpportunityRankingReason,
+    OpportunityRankingResult,
+    OpportunitySearchMatch,
+    OpportunitySearchResult,
     PortfolioSnapshot,
-    Prospect,
-    ProspectRankingReason,
-    ProspectRankingResult,
-    ProspectSearchMatch,
-    ProspectSearchResult,
-    RankedProspect,
+    RankedOpportunity,
 )
 
 STOPWORDS = {
@@ -25,6 +25,8 @@ STOPWORDS = {
     "find",
     "fund",
     "funds",
+    "good",
+    "fit",
 }
 
 
@@ -35,42 +37,51 @@ def _strategy_nav_share(portfolio: PortfolioSnapshot, strategy: str) -> float:
     return strategy_nav / portfolio.total_nav_mn
 
 
-def _recommended_action(score: float) -> str:
-    if score >= 50:
+def _recommended_action(score: float, stage: str, existing_gp_relationship: bool, vehicle_type: str) -> str:
+    if vehicle_type == "re_up" and score >= 44:
+        return "Prepare re-up recommendation with updated portfolio-fit analysis."
+    if stage == "dd" and score >= 48:
+        return "Advance toward investment committee review."
+    if score >= 44:
         return "Advance to next diligence stage."
-    if score >= 42:
+    if score >= 36:
         return "Keep in active pipeline and test against pacing constraints."
-    if score >= 34:
-        return "Monitor for better entry timing or clearer differentiation."
+    if existing_gp_relationship and score >= 30:
+        return "Hold for relationship review and selective follow-up."
     return "Lower near-term priority for allocator bandwidth."
 
 
-def rank_prospects_for_portfolio(portfolio_case: str, portfolio: PortfolioSnapshot, prospects: list[Prospect]) -> ProspectRankingResult:
-    ranked: list[RankedProspect] = []
-    for prospect in prospects:
-        strategy_share = _strategy_nav_share(portfolio, prospect.strategy)
-        reasons: list[ProspectRankingReason] = []
+def rank_opportunities_for_portfolio(
+    portfolio_case: str,
+    portfolio: PortfolioSnapshot,
+    opportunities: list[InvestmentOpportunity],
+) -> OpportunityRankingResult:
+    ranked: list[RankedOpportunity] = []
+    for opportunity in opportunities:
+        strategy_share = _strategy_nav_share(portfolio, opportunity.strategy)
+        reasons: list[OpportunityRankingReason] = []
 
         score = 0.0
         positive_components = {
-            "team_quality": prospect.team_score * 2.0,
-            "track_record": prospect.track_record_score * 2.2,
-            "esg_quality": prospect.esg_score * 1.3,
-            "portfolio_fit": prospect.portfolio_fit_score * 2.5,
-            "diligence_progress": prospect.dd_score * 1.8,
-            "alignment": prospect.gp_commitment_pct * 2.0,
+            "team_quality": opportunity.team_score * 2.0,
+            "track_record": opportunity.track_record_score * 2.2,
+            "esg_quality": opportunity.esg_score * 1.3,
+            "portfolio_fit": opportunity.portfolio_fit_score * 2.6,
+            "diligence_progress": opportunity.dd_score * 1.9,
+            "alignment": opportunity.gp_commitment_pct * 2.0,
+            "pacing_slot": opportunity.pacing_slot_score * 2.1,
         }
         negative_components = {
-            "liquidity_impact": prospect.liquidity_impact_score * 2.1,
-            "overlap_risk": prospect.overlap_risk_score * 1.9,
-            "management_fee": prospect.management_fee_pct * 6.0,
-            "carry": prospect.carry_pct * 0.55,
+            "liquidity_impact": opportunity.liquidity_impact_score * 2.1,
+            "overlap_risk": opportunity.overlap_risk_score * 2.0,
+            "management_fee": opportunity.management_fee_pct * 6.0,
+            "carry": opportunity.carry_pct * 0.55,
         }
 
         for category, component_score in positive_components.items():
             score += component_score
             reasons.append(
-                ProspectRankingReason(
+                OpportunityRankingReason(
                     category=category,
                     score_impact=round(component_score, 4),
                     message=f"{category.replace('_', ' ').title()} supports allocator attractiveness.",
@@ -79,7 +90,7 @@ def rank_prospects_for_portfolio(portfolio_case: str, portfolio: PortfolioSnapsh
         for category, component_score in negative_components.items():
             score -= component_score
             reasons.append(
-                ProspectRankingReason(
+                OpportunityRankingReason(
                     category=category,
                     score_impact=round(-component_score, 4),
                     message=f"{category.replace('_', ' ').title()} reduces near-term attractiveness.",
@@ -90,39 +101,76 @@ def rank_prospects_for_portfolio(portfolio_case: str, portfolio: PortfolioSnapsh
             concentration_penalty = round((strategy_share - 0.22) * 85.0, 4)
             score -= concentration_penalty
             reasons.append(
-                ProspectRankingReason(
+                OpportunityRankingReason(
                     category="strategy_concentration",
                     score_impact=-concentration_penalty,
                     message="Existing portfolio concentration in this strategy reduces fit.",
                 )
             )
-        if prospect.proposed_commitment_mn > portfolio.liquid_reserves_mn * 0.45:
-            size_penalty = round((prospect.proposed_commitment_mn / portfolio.liquid_reserves_mn) * 10.0, 4)
+        if opportunity.proposed_commitment_mn > portfolio.liquid_reserves_mn * 0.45:
+            size_penalty = round((opportunity.proposed_commitment_mn / portfolio.liquid_reserves_mn) * 10.0, 4)
             score -= size_penalty
             reasons.append(
-                ProspectRankingReason(
+                OpportunityRankingReason(
                     category="commitment_size",
                     score_impact=-size_penalty,
                     message="Proposed ticket size is meaningful relative to liquid reserves.",
                 )
             )
+        if opportunity.existing_gp_relationship:
+            relationship_bonus = 4.5
+            score += relationship_bonus
+            reasons.append(
+                OpportunityRankingReason(
+                    category="existing_gp_relationship",
+                    score_impact=relationship_bonus,
+                    message="Existing GP relationship improves diligence efficiency and conviction.",
+                )
+            )
+        if opportunity.od_diligence_status == "completed":
+            od_bonus = 3.0
+            score += od_bonus
+            reasons.append(
+                OpportunityRankingReason(
+                    category="operational_diligence",
+                    score_impact=od_bonus,
+                    message="Operational diligence is already completed.",
+                )
+            )
+        if opportunity.expected_call_profile == "fast":
+            fast_call_penalty = 5.0
+            score -= fast_call_penalty
+            reasons.append(
+                OpportunityRankingReason(
+                    category="call_profile",
+                    score_impact=-fast_call_penalty,
+                    message="Fast call profile tightens pacing flexibility.",
+                )
+            )
 
         composite_score = round(max(score, 0.0), 4)
         ranked.append(
-            RankedProspect(
-                prospect_id=prospect.prospect_id,
-                fund_name=prospect.fund_name,
-                strategy=prospect.strategy,
-                geography=prospect.geography,
-                status=prospect.status,
+            RankedOpportunity(
+                opportunity_id=opportunity.opportunity_id,
+                manager_name=opportunity.manager_name,
+                fund_name=opportunity.fund_name,
+                strategy=opportunity.strategy,
+                vehicle_type=opportunity.vehicle_type,
+                geography=opportunity.geography,
+                pipeline_stage=opportunity.pipeline_stage,
                 composite_score=composite_score,
-                recommended_action=_recommended_action(composite_score),
+                recommended_action=_recommended_action(
+                    composite_score,
+                    opportunity.pipeline_stage,
+                    opportunity.existing_gp_relationship,
+                    opportunity.vehicle_type,
+                ),
                 reasons=sorted(reasons, key=lambda item: abs(item.score_impact), reverse=True),
             )
         )
 
     ordered = sorted(ranked, key=lambda item: (-item.composite_score, item.fund_name))
-    return ProspectRankingResult(portfolio_case=portfolio_case, prospects=ordered)
+    return OpportunityRankingResult(portfolio_case=portfolio_case, opportunities=ordered)
 
 
 def _tokenize(text: str) -> list[str]:
@@ -130,53 +178,67 @@ def _tokenize(text: str) -> list[str]:
     return [token for token in tokens if token not in STOPWORDS]
 
 
-def search_prospects(query: str, prospects: list[Prospect]) -> ProspectSearchResult:
+def search_opportunities(query: str, opportunities: list[InvestmentOpportunity]) -> OpportunitySearchResult:
     query_terms = set(_tokenize(query))
     strategy_aliases = {
         "infra": "infrastructure",
         "forest": "timberland",
         "timber": "timberland",
         "property": "real_estate",
+        "reup": "re_up",
+        "coinvest": "co_invest",
     }
     normalized_terms = set(query_terms)
     for term in list(query_terms):
         if term in strategy_aliases:
             normalized_terms.add(strategy_aliases[term])
 
-    matches: list[ProspectSearchMatch] = []
-    for prospect in prospects:
-        prospect_terms = set(
+    matches: list[OpportunitySearchMatch] = []
+    for opportunity in opportunities:
+        opportunity_terms = set(
             _tokenize(
                 " ".join(
                     [
-                        prospect.fund_name,
-                        prospect.strategy,
-                        prospect.geography,
-                        prospect.status,
-                        " ".join(prospect.tags),
-                        prospect.notes,
+                        opportunity.manager_name,
+                        opportunity.fund_name,
+                        opportunity.strategy,
+                        opportunity.vehicle_type,
+                        opportunity.geography,
+                        opportunity.pipeline_stage,
+                        opportunity.target_strategy_bucket,
+                        opportunity.od_diligence_status,
+                        opportunity.legal_status,
+                        " ".join(opportunity.tags),
+                        opportunity.portfolio_overlap_notes,
                     ]
                 )
             )
         )
-        matched_terms = sorted(normalized_terms & prospect_terms)
+        matched_terms = sorted(normalized_terms & opportunity_terms)
         if not matched_terms:
             continue
         base_score = len(matched_terms) * 10.0
-        thematic_bonus = prospect.portfolio_fit_score + prospect.dd_score - prospect.overlap_risk_score * 0.4
+        thematic_bonus = (
+            opportunity.portfolio_fit_score
+            + opportunity.dd_score
+            + opportunity.pacing_slot_score * 0.5
+            - opportunity.overlap_risk_score * 0.4
+        )
         match_score = round(base_score + thematic_bonus, 4)
         matches.append(
-            ProspectSearchMatch(
-                prospect_id=prospect.prospect_id,
-                fund_name=prospect.fund_name,
-                strategy=prospect.strategy,
-                geography=prospect.geography,
-                status=prospect.status,
+            OpportunitySearchMatch(
+                opportunity_id=opportunity.opportunity_id,
+                manager_name=opportunity.manager_name,
+                fund_name=opportunity.fund_name,
+                strategy=opportunity.strategy,
+                vehicle_type=opportunity.vehicle_type,
+                geography=opportunity.geography,
+                pipeline_stage=opportunity.pipeline_stage,
                 match_score=match_score,
                 matched_terms=matched_terms,
-                summary=prospect.notes,
+                summary=opportunity.portfolio_overlap_notes,
             )
         )
 
     ordered = sorted(matches, key=lambda item: (-item.match_score, item.fund_name))
-    return ProspectSearchResult(query=query, matches=ordered)
+    return OpportunitySearchResult(query=query, matches=ordered)

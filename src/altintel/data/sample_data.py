@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 from datetime import date
 
-from altintel.core.models import InvestmentMemoInput, PortfolioHolding, PortfolioSnapshot, Prospect
+from altintel.core.models import InvestmentMemoInput, InvestmentOpportunity, PortfolioHolding, PortfolioSnapshot
 
 
 DATA_ROOT = Path("data")
@@ -13,7 +13,7 @@ SAMPLE_DOCUMENTS_DIR = DATA_ROOT / "sample_documents"
 SYNTHETIC_DIR = DATA_ROOT / "synthetic"
 DEFAULT_PORTFOLIO_CASE = "balanced_institution"
 DEFAULT_COMMITMENT_CASE = "infrastructure"
-PROSPECT_REGISTRY_PATH = SYNTHETIC_DIR / "prospect_registry.json"
+OPPORTUNITY_REGISTRY_PATH = SYNTHETIC_DIR / "opportunity_registry.json"
 
 
 def load_text_document(path: str | Path) -> str:
@@ -106,21 +106,25 @@ def load_cashflow_assumptions(path: str | Path = SYNTHETIC_DIR / "cashflow_assum
     return load_json(path)
 
 
-def load_prospect_registry(path: str | Path = PROSPECT_REGISTRY_PATH) -> list[Prospect]:
+def load_opportunity_registry(path: str | Path = OPPORTUNITY_REGISTRY_PATH) -> list[InvestmentOpportunity]:
     payload = load_json(path)
     if not isinstance(payload, list):
-        raise ValueError("Prospect registry must be a list")
-    prospects: list[Prospect] = []
+        raise ValueError("Opportunity registry must be a list")
+    opportunities: list[InvestmentOpportunity] = []
     for row in payload:
         if not isinstance(row, dict):
-            raise ValueError("Prospect registry entries must be objects")
-        prospects.append(
-            Prospect(
-                prospect_id=str(row["prospect_id"]),
+            raise ValueError("Opportunity registry entries must be objects")
+        opportunities.append(
+            InvestmentOpportunity(
+                opportunity_id=str(row["opportunity_id"]),
+                manager_name=str(row["manager_name"]),
                 fund_name=str(row["fund_name"]),
                 strategy=str(row["strategy"]),
+                vehicle_type=str(row["vehicle_type"]),
                 geography=str(row["geography"]),
-                status=str(row["status"]),
+                pipeline_stage=str(row["pipeline_stage"]),
+                vintage_year=int(row["vintage_year"]),
+                existing_gp_relationship=bool(row["existing_gp_relationship"]),
                 target_size_mn=float(row["target_size_mn"]),
                 proposed_commitment_mn=float(row["proposed_commitment_mn"]),
                 gp_commitment_pct=float(row["gp_commitment_pct"]),
@@ -133,8 +137,14 @@ def load_prospect_registry(path: str | Path = PROSPECT_REGISTRY_PATH) -> list[Pr
                 liquidity_impact_score=float(row["liquidity_impact_score"]),
                 overlap_risk_score=float(row["overlap_risk_score"]),
                 dd_score=float(row["dd_score"]),
+                pacing_slot_score=float(row["pacing_slot_score"]),
+                od_diligence_status=str(row["od_diligence_status"]),
+                legal_status=str(row["legal_status"]),
+                target_strategy_bucket=str(row["target_strategy_bucket"]),
+                expected_call_profile=str(row["expected_call_profile"]),
+                portfolio_overlap_notes=str(row["portfolio_overlap_notes"]),
                 tags=[str(tag) for tag in row.get("tags", [])],
                 notes=str(row.get("notes", "")),
             )
         )
-    return prospects
+    return opportunities
