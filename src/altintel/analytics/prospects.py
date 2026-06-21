@@ -4,6 +4,9 @@ import re
 
 from altintel.core.models import (
     InvestmentOpportunity,
+    OpportunityComparisonDimension,
+    OpportunityComparisonEntry,
+    OpportunityComparisonResult,
     OpportunityRankingReason,
     OpportunityRankingResult,
     OpportunitySearchMatch,
@@ -242,3 +245,97 @@ def search_opportunities(query: str, opportunities: list[InvestmentOpportunity])
 
     ordered = sorted(matches, key=lambda item: (-item.match_score, item.fund_name))
     return OpportunitySearchResult(query=query, matches=ordered)
+
+
+def compare_opportunities(
+    portfolio_case: str,
+    portfolio: PortfolioSnapshot,
+    opportunities: list[InvestmentOpportunity],
+    compared_opportunity_ids: list[str],
+) -> OpportunityComparisonResult:
+    selected = [opportunity for opportunity in opportunities if opportunity.opportunity_id in compared_opportunity_ids]
+    ranking = rank_opportunities_for_portfolio(portfolio_case, portfolio, selected)
+    ranked_map = {entry.opportunity_id: entry for entry in ranking.opportunities}
+    selected_map = {opportunity.opportunity_id: opportunity for opportunity in selected}
+
+    dimension_specs = [
+        ("portfolio_fit", "Higher portfolio-fit score improves allocator suitability."),
+        ("track_record", "Stronger manager track record improves conviction."),
+        ("liquidity_impact", "Lower liquidity impact preserves pacing flexibility."),
+        ("overlap_risk", "Lower overlap risk improves diversification value."),
+        ("pacing_slot", "Higher pacing-slot score supports near-term commitment capacity."),
+        ("esg_quality", "Higher ESG quality supports institutional sustainability priorities."),
+    ]
+    dimensions: list[OpportunityComparisonDimension] = []
+    for category, explanation in dimension_specs:
+        best_id: str | None = None
+        best_value: float | None = None
+        second_value: float | None = None
+        for opportunity in selected:
+            value = {
+                "portfolio_fit": opportunity.portfolio_fit_score,
+                "track_record": opportunity.track_record_score,
+                "liquidity_impact": -opportunity.liquidity_impact_score,
+                "overlap_risk": -opportunity.overlap_risk_score,
+                "pacing_slot": opportunity.pacing_slot_score,
+                "esg_quality": opportunity.esg_score,
+            }[category]
+            if best_value is None or value > best_value:
+                second_value = best_value
+                best_value = value
+                best_id = opportunity.opportunity_id
+            elif second_value is None or value > second_value:
+                second_value = value
+        difference = round((best_value - second_value), 4) if best_value is not None and second_value is not None else 0.0
+        dimensions.append(
+            OpportunityComparisonDimension(
+                category=category,
+                winner_opportunity_id=best_id,
+                score_difference=difference,
+                explanation=explanation,
+            )
+        )
+
+    entries: list[OpportunityComparisonEntry] = []
+    for opportunity_id in compared_opportunity_ids:
+        ranked = ranked_map[opportunity_id]
+        opportunity = selected_map[opportunity_id]
+        strengths = [
+            f"Portfolio fit score: {opportunity.portfolio_fit_score}",
+            f"Track record score: {opportunity.track_record_score}",
+            f"Pacing slot score: {opportunity.pacing_slot_score}",
+        ]
+        weaknesses = [
+            f"Liquidity impact score: {opportunity.liquidity_impact_score}",
+            f"Overlap risk score: {opportunity.overlap_risk_score}",
+            f"Expected call profile: {opportunity.expected_call_profile}",
+        ]
+        entries.append(
+            OpportunityComparisonEntry(
+                opportunity_id=opportunity.opportunity_id,
+                manager_name=opportunity.manager_name,
+                fund_name=opportunity.fund_name,
+                strategy=opportunity.strategy,
+                vehicle_type=opportunity.vehicle_type,
+                pipeline_stage=opportunity.pipeline_stage,
+                composite_score=ranked.composite_score,
+                recommended_action=ranked.recommended_action,
+                strengths=strengths,
+                weaknesses=weaknesses,
+            )
+        )
+
+    preferred_opportunity_id = ranking.opportunities[0].opportunity_id if ranking.opportunities else None
+    summary = (
+        f"Preferred opportunity for {portfolio_case}: {ranked_map[preferred_opportunity_id].fund_name}."
+        if preferred_opportunity_id is not None
+        else "No preferred opportunity identified."
+    )
+    return OpportunityComparisonResult(
+        portfolio_case=portfolio_case,
+        compared_opportunity_ids=compared_opportunity_ids,
+        preferred_opportunity_id=preferred_opportunity_id,
+        entries=entries,
+        dimensions=dimensions,
+        summary=summary,
+    )

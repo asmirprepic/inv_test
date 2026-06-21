@@ -344,3 +344,35 @@ class OpportunitySearchMatch:
 class OpportunitySearchResult:
     query: str
     matches: list[OpportunitySearchMatch]
+
+
+@dataclass(slots=True)
+class OpportunityComparisonDimension:
+    category: str
+    winner_opportunity_id: str | None
+    score_difference: float
+    explanation: str
+
+
+@dataclass(slots=True)
+class OpportunityComparisonEntry:
+    opportunity_id: str
+    manager_name: str
+    fund_name: str
+    strategy: str
+    vehicle_type: str
+    pipeline_stage: str
+    composite_score: float
+    recommended_action: str
+    strengths: list[str]
+    weaknesses: list[str]
+
+
+@dataclass(slots=True)
+class OpportunityComparisonResult:
+    portfolio_case: str
+    compared_opportunity_ids: list[str]
+    preferred_opportunity_id: str | None
+    entries: list[OpportunityComparisonEntry]
+    dimensions: list[OpportunityComparisonDimension]
+    summary: str

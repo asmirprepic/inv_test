@@ -2,8 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from altintel.analytics.prospects import rank_opportunities_for_portfolio, search_opportunities
-from altintel.core import OpportunityRankingResult, OpportunitySearchResult, PortfolioSnapshot
+from altintel.analytics.prospects import compare_opportunities, rank_opportunities_for_portfolio, search_opportunities
+from altintel.core import (
+    OpportunityComparisonResult,
+    OpportunityRankingResult,
+    OpportunitySearchResult,
+    PortfolioSnapshot,
+)
 from altintel.data.sample_data import load_opportunity_registry, load_portfolio_snapshot
 
 
@@ -37,3 +42,17 @@ def run_ai_opportunity_ranking_pipeline(portfolio_case: str = "balanced_institut
 def run_ai_opportunity_search_pipeline(query: str) -> OpportunitySearchResult:
     opportunities = load_opportunity_registry()
     return search_opportunities(query=query, opportunities=opportunities)
+
+
+def run_ai_opportunity_comparison_pipeline(
+    portfolio_case: str,
+    compared_opportunity_ids: list[str],
+) -> OpportunityComparisonResult:
+    portfolio = load_portfolio_snapshot(case_name=portfolio_case)
+    opportunities = load_opportunity_registry()
+    return compare_opportunities(
+        portfolio_case=portfolio_case,
+        portfolio=portfolio,
+        opportunities=opportunities,
+        compared_opportunity_ids=compared_opportunity_ids,
+    )
