@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 
 from altintel.core.models import (
+    CommitmentRecommendationReason,
+    CommitmentRecommendationResult,
     InvestmentOpportunity,
     OpportunityComparisonDimension,
     OpportunityComparisonEntry,
@@ -337,5 +339,110 @@ def compare_opportunities(
         preferred_opportunity_id=preferred_opportunity_id,
         entries=entries,
         dimensions=dimensions,
+        summary=summary,
+    )
+
+
+def recommend_commitment(
+    portfolio_case: str,
+    portfolio: PortfolioSnapshot,
+    opportunities: list[InvestmentOpportunity],
+    opportunity_id: str,
+) -> CommitmentRecommendationResult:
+    ranking = rank_opportunities_for_portfolio(portfolio_case, portfolio, opportunities)
+    ranked_map = {entry.opportunity_id: entry for entry in ranking.opportunities}
+    opportunity_map = {opportunity.opportunity_id: opportunity for opportunity in opportunities}
+    ranked = ranked_map[opportunity_id]
+    opportunity = opportunity_map[opportunity_id]
+
+    reasons: list[CommitmentRecommendationReason] = []
+    conditions: list[str] = []
+
+    if ranked.composite_score >= 60:
+        recommendation = "advance"
+        conviction = "high"
+    elif ranked.composite_score >= 46:
+        recommendation = "advance_with_conditions"
+        conviction = "medium"
+    elif ranked.composite_score >= 36:
+        recommendation = "hold"
+        conviction = "medium"
+    else:
+        recommendation = "decline"
+        conviction = "low"
+
+    if opportunity.portfolio_fit_score >= 7.5:
+        reasons.append(
+            CommitmentRecommendationReason(
+                category="portfolio_fit",
+                impact="positive",
+                message="Portfolio fit is strong relative to current allocator objectives.",
+            )
+        )
+    if opportunity.track_record_score >= 8.0:
+        reasons.append(
+            CommitmentRecommendationReason(
+                category="track_record",
+                impact="positive",
+                message="Manager track record supports underwriting confidence.",
+            )
+        )
+    if opportunity.overlap_risk_score >= 6.5:
+        reasons.append(
+            CommitmentRecommendationReason(
+                category="overlap_risk",
+                impact="negative",
+                message="Existing portfolio overlap reduces incremental diversification value.",
+            )
+        )
+        conditions.append("Re-test concentration and overlap versus current strategy bucket before approval.")
+    if opportunity.liquidity_impact_score >= 6.8:
+        reasons.append(
+            CommitmentRecommendationReason(
+                category="liquidity_impact",
+                impact="negative",
+                message="Liquidity impact is elevated relative to other current opportunities.",
+            )
+        )
+        conditions.append("Confirm pacing capacity and reserve adequacy under downside distribution assumptions.")
+    if opportunity.expected_call_profile == "fast":
+        reasons.append(
+            CommitmentRecommendationReason(
+                category="call_profile",
+                impact="negative",
+                message="Fast call profile compresses pacing flexibility in the near term.",
+            )
+        )
+        conditions.append("Stage commitment timing against the annual pacing budget.")
+    if opportunity.vehicle_type == "re_up":
+        reasons.append(
+            CommitmentRecommendationReason(
+                category="relationship",
+                impact="positive",
+                message="Existing GP relationship can shorten diligence time and improve execution certainty.",
+            )
+        )
+    if opportunity.od_diligence_status != "completed":
+        conditions.append("Complete operational due diligence before final committee approval.")
+    if opportunity.legal_status == "not_started":
+        conditions.append("Initiate legal review and side-letter workstream.")
+
+    if not conditions and recommendation.startswith("advance"):
+        conditions.append("No material gating items identified beyond standard IC process.")
+
+    summary = (
+        f"{recommendation.replace('_', ' ').title()} {opportunity.fund_name} for {portfolio_case} "
+        f"with {conviction} conviction based on fit, pacing, and portfolio-overlap considerations."
+    )
+    return CommitmentRecommendationResult(
+        portfolio_case=portfolio_case,
+        opportunity_id=opportunity.opportunity_id,
+        manager_name=opportunity.manager_name,
+        fund_name=opportunity.fund_name,
+        recommendation=recommendation,
+        conviction=conviction,
+        composite_score=ranked.composite_score,
+        reasons=reasons,
+        conditions=conditions,
         summary=summary,
     )
