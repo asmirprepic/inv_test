@@ -376,3 +376,24 @@ class OpportunityComparisonResult:
     entries: list[OpportunityComparisonEntry]
     dimensions: list[OpportunityComparisonDimension]
     summary: str
+
+
+@dataclass(slots=True)
+class CommitmentRecommendationReason:
+    category: str
+    impact: str
+    message: str
+
+
+@dataclass(slots=True)
+class CommitmentRecommendationResult:
+    portfolio_case: str
+    opportunity_id: str
+    manager_name: str
+    fund_name: str
+    recommendation: str
+    conviction: str
+    composite_score: float
+    reasons: list[CommitmentRecommendationReason]
+    conditions: list[str]
+    summary: str

@@ -12,6 +12,7 @@ from altintel.pipeline.ai_extraction_pipeline import (
 from altintel.pipeline.ai_prospect_pipeline import (
     AIOpportunityUniverse,
     build_ai_opportunity_universe,
+    run_ai_commitment_recommendation_pipeline,
     run_ai_opportunity_comparison_pipeline,
     run_ai_opportunity_ranking_pipeline,
     run_ai_opportunity_search_pipeline,
@@ -32,6 +33,7 @@ __all__ = [
     "FullPipelineResult",
     "build_ai_opportunity_universe",
     "export_ai_watchlist_pipeline",
+    "run_ai_commitment_recommendation_pipeline",
     "run_ai_opportunity_comparison_pipeline",
     "run_ai_evaluation_pipeline",
     "run_ai_extraction_pipeline",
