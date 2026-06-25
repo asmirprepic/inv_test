@@ -397,3 +397,30 @@ class CommitmentRecommendationResult:
     reasons: list[CommitmentRecommendationReason]
     conditions: list[str]
     summary: str
+
+
+@dataclass(slots=True)
+class DenominatorEffectOpportunityImpact:
+    opportunity_id: str
+    manager_name: str
+    fund_name: str
+    base_composite_score: float
+    stressed_composite_score: float
+    score_change: float
+    stressed_recommendation: str
+    key_constraint: str
+
+
+@dataclass(slots=True)
+class DenominatorEffectResult:
+    portfolio_case: str
+    public_market_drawdown_pct: float
+    baseline_private_markets_pct: float
+    stressed_private_markets_pct: float
+    target_private_markets_pct: float
+    overweight_gap_pct: float
+    baseline_public_nav_mn: float
+    stressed_public_nav_mn: float
+    stressed_liquid_reserves_mn: float
+    opportunity_impacts: list[DenominatorEffectOpportunityImpact]
+    summary: str
