@@ -22,6 +22,7 @@ from altintel.pipeline.ai_watchlist_pipeline import (
     export_ai_watchlist_pipeline,
     run_ai_watchlist_pipeline,
 )
+from altintel.pipeline.denominator_effect_pipeline import run_denominator_effect_pipeline
 from altintel.pipeline.full_pipeline import FullPipelineResult, run_full_pipeline
 
 __all__ = [
@@ -33,6 +34,7 @@ __all__ = [
     "FullPipelineResult",
     "build_ai_opportunity_universe",
     "export_ai_watchlist_pipeline",
+    "run_denominator_effect_pipeline",
     "run_ai_commitment_recommendation_pipeline",
     "run_ai_opportunity_comparison_pipeline",
     "run_ai_evaluation_pipeline",
