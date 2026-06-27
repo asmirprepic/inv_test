@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from altintel.pipeline import run_ai_opportunity_comparison_pipeline
+from altintel.pipeline import export_ai_opportunity_comparison_pipeline, run_ai_opportunity_comparison_pipeline
 
 
 def main() -> None:
@@ -13,8 +13,14 @@ def main() -> None:
         portfolio_case="balanced_institution",
         compared_opportunity_ids=compared_ids,
     )
+    artifacts = export_ai_opportunity_comparison_pipeline(
+        portfolio_case="balanced_institution",
+        compared_opportunity_ids=compared_ids,
+    )
 
     print(result.summary)
+    print(f"JSON artifact: {artifacts.json_path}")
+    print(f"Markdown artifact: {artifacts.markdown_path}")
     print("Entries:")
     for entry in result.entries:
         print(
