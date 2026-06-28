@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from altintel.analytics.comparison import compare_portfolio_cases
 from altintel.core import load_app_config
 

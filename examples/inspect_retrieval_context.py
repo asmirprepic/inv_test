@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from altintel.data.sample_data import load_named_proposed_commitment
 from altintel.llm.retrieval import build_retrieval_packet
 

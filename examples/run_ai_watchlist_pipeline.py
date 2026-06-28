@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from altintel.pipeline import export_ai_watchlist_pipeline, run_ai_watchlist_pipeline
 
 

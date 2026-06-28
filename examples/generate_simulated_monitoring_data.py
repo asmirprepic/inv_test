@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from altintel.analytics.monitoring import build_data_driven_insights
 from altintel.data.sample_data import load_portfolio_snapshot
 from altintel.data.simulation import export_monitoring_data, generate_portfolio_monitoring_data

@@ -397,6 +397,14 @@ class CommitmentRecommendationResult:
     reasons: list[CommitmentRecommendationReason]
     conditions: list[str]
     summary: str
+    denominator_effect_applied: bool = False
+    baseline_recommendation: str | None = None
+    baseline_conviction: str | None = None
+    baseline_composite_score: float | None = None
+    public_market_drawdown_pct: float | None = None
+    stressed_private_markets_pct: float | None = None
+    overweight_gap_pct: float | None = None
+    stressed_key_constraint: str | None = None
 
 
 @dataclass(slots=True)

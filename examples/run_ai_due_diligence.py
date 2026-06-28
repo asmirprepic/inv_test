@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from altintel.core import load_app_config
 from altintel.data.sample_data import load_proposed_commitment
 from altintel.due_diligence.service import run_due_diligence

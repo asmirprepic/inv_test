@@ -158,6 +158,14 @@ def export_commitment_recommendation_json(result: CommitmentRecommendationResult
         "conviction": result.conviction,
         "composite_score": result.composite_score,
         "summary": result.summary,
+        "denominator_effect_applied": result.denominator_effect_applied,
+        "baseline_recommendation": result.baseline_recommendation,
+        "baseline_conviction": result.baseline_conviction,
+        "baseline_composite_score": result.baseline_composite_score,
+        "public_market_drawdown_pct": result.public_market_drawdown_pct,
+        "stressed_private_markets_pct": result.stressed_private_markets_pct,
+        "overweight_gap_pct": result.overweight_gap_pct,
+        "stressed_key_constraint": result.stressed_key_constraint,
         "reasons": [
             {
                 "category": reason.category,
@@ -181,9 +189,22 @@ def render_commitment_recommendation_markdown(result: CommitmentRecommendationRe
         f"- Composite score: `{result.composite_score}`",
         f"- Summary: {result.summary}",
         "",
-        "## Reasons",
-        "",
     ]
+    if result.denominator_effect_applied:
+        lines.extend(
+            [
+                "## Stress Context",
+                "",
+                f"- Baseline recommendation: `{result.baseline_recommendation}`",
+                f"- Baseline score: `{result.baseline_composite_score}`",
+                f"- Public-market drawdown: `{result.public_market_drawdown_pct}`",
+                f"- Stressed private-markets pct: `{result.stressed_private_markets_pct}`",
+                f"- Overweight gap pct: `{result.overweight_gap_pct}`",
+                f"- Key stressed constraint: `{result.stressed_key_constraint}`",
+                "",
+            ]
+        )
+    lines.extend(["## Reasons", ""])
     for reason in result.reasons:
         lines.append(f"- `{reason.category}` | `{reason.impact}` | {reason.message}")
     lines.append("")

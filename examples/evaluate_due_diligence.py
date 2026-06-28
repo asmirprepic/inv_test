@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from altintel.core import load_app_config
 from altintel.due_diligence.evaluation import run_extraction_evaluation
 

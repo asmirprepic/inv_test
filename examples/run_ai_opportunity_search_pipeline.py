@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from altintel.pipeline import run_ai_opportunity_search_pipeline
 
 

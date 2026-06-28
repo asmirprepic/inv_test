@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import _bootstrap
+
 from altintel.core import load_app_config
 from altintel.pipeline import export_denominator_effect_pipeline, run_denominator_effect_pipeline
 
